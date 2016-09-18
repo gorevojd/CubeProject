@@ -4,6 +4,7 @@
 #include "FileSystem/ASSIMP_model_loader.h"
 #include "FileSystem/FBX_SDK_model_loader.h"
 
+<<<<<<< HEAD
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -11,6 +12,13 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
+=======
+#include <Windows.h>
+#include <GL/glew.h>
+#include <GL/wglew.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+>>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 
 #include "win32_code.h"
 
@@ -45,8 +53,13 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile){
 		0,
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
+<<<<<<< HEAD
 		0);	
 	
+=======
+		0);
+
+>>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 	if (handle != INVALID_HANDLE_VALUE){
 		LARGE_INTEGER FileSize;
 		GetFileSizeEx(handle, &FileSize);
@@ -919,6 +932,7 @@ int WINAPI WinMain(
 
 	game_framebuffer mainFramebuffer = SetupFramebuffer(windowWidth, windowHeight, screenVAO);
 
+<<<<<<< HEAD
 	//loaded_texture contDiffTex("../Data/Textures/container2.png");
 	//loaded_texture contSpecTex("../Data/Textures/container2spec.png");
 	//loaded_texture contEmissTex("../Data/Textures/container2emission.jpg");
@@ -930,6 +944,21 @@ int WINAPI WinMain(
 	game_shader mainShader = LoadGameShader(SIMPLE_SHADER, "Shaders/main.vs", "Shaders/main.fs");
 	game_shader textShader = LoadGameShader(TEXT_SHADER, "Shaders/text.vs", "Shaders/text.fs");
 	game_shader screenShader = LoadGameShader(SCREEN_SHADER, "Shaders/screen.vs", "Shaders/screen.fs");
+=======
+	loaded_texture contDiffTex("../Data/Textures/container2.png");
+	loaded_texture contSpecTex("../Data/Textures/container2spec.png");
+	loaded_texture contEmissTex("../Data/Textures/container2emission.jpg");
+
+	loaded_texture lavaDiffuseTex("../Data/Textures/LavaTile.png");
+	loaded_texture lavaSpecularTex("../Data/Textures/LavaTileSpecular.png");
+	loaded_texture lavaEmissionTex("../Data/Textures/LavaTileEmission.png");
+
+	game_shader mainShader = LoadGameShader(SIMPLE_SHADER, "../Data/Shaders/MainShaderVS.txt", "../Data/Shaders/MainShaderFS.txt");
+	game_shader textShader = LoadGameShader(TEXT_SHADER, "../Data/Shaders/TextShaderVS.txt", "../Data/Shaders/TextShaderFS.txt");
+	game_shader cubeShader = LoadGameShader(CUBE_SHADER, "../Data/Shaders/CubeShaderVS.txt", "../Data/Shaders/CubeShaderFS.txt");
+	game_shader screenShader = LoadGameShader(SCREEN_SHADER, "../Data/Shaders/ScreenShaderVertex.txt", "../Data/Shaders/ScreenShaderFragment.txt");
+	//game_shader depthShader = LoadGameShader(DEPTH_SHADER, "../Data/Shaders/DepthShaderVS.txt", "../Data/Shaders/DepthShaderFS.txt");
+>>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 
 	glm::vec3 pointLightPositions[] = {
 		glm::vec3( 40.0f, 15.0f, 0.0f),
@@ -967,9 +996,30 @@ int WINAPI WinMain(
 	glUniform1f(matShineLoc, 32.0f);
 	glUseProgram(0);
 
+<<<<<<< HEAD
 
 	GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Spalding/NBA BASKETBALL.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
 	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/House/house.fbx", 1.0f));
+=======
+	glUseProgram(cubeShader.program);
+	for (int i = 0; i < 4; i++){
+		std::stringstream ss;
+		ss << i;
+		std::string uniformStr = "pointLights[" + ss.str() + "]";
+		UniformPointLight(cubeShader, lits[i], uniformStr);
+	}
+	glUseProgram(0);
+
+
+	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Animations/D_idle.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Characters/DeadAnarhist/FuseModel.fbx", 1.0f));
+	GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/3dModels/Scenes/MainScene.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Animations/D_idle.fbx", 1.0f));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Khata/khata.fbx", 1.0f));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/church/3ds file.3ds", 1.0f));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Scenes/MainScene.obj", 1.0f));
+	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/3dModels/cube2/cube2.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
+>>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 
 	float screenCenterX = (float)GlobalScreen.Width / 2.0f;
 	float screenCenterY = (float)GlobalScreen.Height / 2.0f;
@@ -1003,6 +1053,10 @@ int WINAPI WinMain(
 		EngineState->ScreenBuffer = &Buffer;
 		EngineState->MainShader = mainShader;
 		EngineState->TextShader = textShader;
+<<<<<<< HEAD
+=======
+		EngineState->CubeShader = cubeShader;
+>>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 		EngineState->ScreenShader = screenShader;
 		EngineState->textVAO = textVAO;
 		EngineState->textVBO = textVBO;
