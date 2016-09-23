@@ -18,10 +18,6 @@ struct Vertex{
 	v3 Normal;
 	v2 TexCoords;
 	v3 Tangent;
-<<<<<<< HEAD
-=======
-	v3 Bitangent;
->>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 };
 
 struct SkinnedVertex{

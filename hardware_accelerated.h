@@ -108,11 +108,7 @@ void RenderVoxelMeshThreads(std::vector<voxel_mesh_chunk>& meshThreads, game_sha
 }
 
 //NOTE(Dima): Very well optimized function
-<<<<<<< HEAD
 void RenderText(std::string text, v2 pos, character_atlas atlas, game_shader shader, u32 VAO, u32 VBO, int windowWidth, int windowHeight, float scale = 1.0f, v3 color = v3(1.0f, 0.0f, 1.0f)){
-=======
-void RenderText(std::string text, v2 pos, character_atlas atlas, game_shader shader, u32 VAO, u32 VBO, int windowWidth, int windowHeight, float scale = 1.0f, v3 color = v3(0.0f, 1.0f, 0.0f)){
->>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 	glm::mat4 projection = glm::ortho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight);
 
 	glUseProgram(shader.program);
@@ -131,10 +127,7 @@ void RenderText(std::string text, v2 pos, character_atlas atlas, game_shader sha
 	t_point* vertices = new t_point[6 * text.length()];
 
 	int n = 0;
-<<<<<<< HEAD
 	glActiveTexture(GL_TEXTURE0);
-=======
->>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 	glBindTexture(GL_TEXTURE_2D, atlas.TextureID);
 	glBindVertexArray(VAO);
 	for (int i = 0; i < text.length(); i++){

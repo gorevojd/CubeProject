@@ -1,12 +1,9 @@
 #ifndef COMMON_CODE_H
 
-<<<<<<< HEAD
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
 #endif
 
-=======
->>>>>>> d121db4fa6a467e924453b3d1fe10ad3027f76d6
 #include <stdint.h>
 
 #include <string>

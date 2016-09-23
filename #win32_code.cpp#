@@ -37,7 +37,7 @@ static character_info* characters = new character_info[128];
 static character_atlas GlobalCharacterAtlas;
 static std::vector<voxel_mesh_chunk> GlobalMeshThreads;
 static std::vector<Model> GlobalModelsArray;
-static WINDOWPLACEMENT GlobalWindowPosition;
+static WxINDOWPLACEMENT GlobalWindowPosition;
 //std::vector<phong_material> GlobalMaterialsArray;
 
 DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile){
@@ -484,12 +484,12 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 	/*
 	GL_ALWAYS The depth test always passes.
 	GL_NEVER The depth test never passes.
-	GL_LESS Passes if the fragment’s depth value is less than the stored depth value.
-	GL_EQUAL Passes if the fragment’s depth value is equal to the stored depth value.
-	GL_LEQUAL 	Passes if the fragment’s depth value is less than or equal to the stored depth value.
-	GL_GREATER Passes if the fragment’s depth value is greater than the stored depth value.
-	GL_NOTEQUAL Passes if the fragment’s depth value is not equal to the stored depth value.
-	GL_GEQUAL Passes if the fragment’s depth value is greater than or equal to the stored dept value.
+	GL_LESS Passes if the fragmentÂ’s depth value is less than the stored depth value.
+	GL_EQUAL Passes if the fragmentÂ’s depth value is equal to the stored depth value.
+	GL_LEQUAL 	Passes if the fragmentÂ’s depth value is less than or equal to the stored depth value.
+	GL_GREATER Passes if the fragmentÂ’s depth value is greater than the stored depth value.
+	GL_NOTEQUAL Passes if the fragmentÂ’s depth value is not equal to the stored depth value.
+	GL_GEQUAL Passes if the fragmentÂ’s depth value is greater than or equal to the stored dept value.
 	*/
 	//glDepthFunc(GL_LESS);
 	//glEnable(GL_STENCIL_TEST);
