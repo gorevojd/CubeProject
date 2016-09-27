@@ -44,9 +44,9 @@ struct game_input{
 	game_input(){
 
 	}
-	~game_input(){
-		delete[] this->controllers;
-	}
+	//~game_input(){
+	//	delete[] this->controllers;
+	//}
 };
 
 #define CLASS_INPUT_H

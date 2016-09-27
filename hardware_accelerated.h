@@ -15,7 +15,6 @@ void RenderMesh(const Mesh* mesh, game_shader shader){
 	locations.push_back(glGetUniformLocation(shader.program, "material.normal"));
 	locations.push_back(glGetUniformLocation(shader.program, "material.emission"));
 
-
 	for (int i = 0; i < mesh->textures.size(); i++){
 #if 0
 		switch (mesh->textures[i].type){
@@ -116,7 +115,7 @@ void RenderText(std::string text, v2 pos, character_atlas atlas, game_shader sha
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 	glActiveTexture(GL_TEXTURE0);
 	glUniform3f(glGetUniformLocation(shader.program, "glyphColor"), color.r, color.g, color.b);
-	
+
 	struct t_point {
 		GLfloat x;
 		GLfloat y;

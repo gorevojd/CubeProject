@@ -370,7 +370,7 @@ static game_framebuffer SetupDepthMapFramebuffer(u32 VAO){
 	GLuint depthMapFBO;
 	glGenFramebuffers(1, &depthMapFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-
+	        
 	const u32 SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	GLuint depthMap;
 	glGenTextures(1, &depthMap);

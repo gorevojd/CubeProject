@@ -45,7 +45,7 @@ inline quaternion ConjugateQuaternion(const quaternion& quat){
 	return Quaternion(-quat.x, -quat.y, -quat.z, quat.w);
 }
 
-quaternion MultiplyQuaternionByQuaternion(const quaternion& l, const quaternion& r){
+inline quaternion MultiplyQuaternionByQuaternion(const quaternion& l, const quaternion& r){
 #if 0 
 	float w = l.w * r.w - l.x * r.x - l.y * r.y - l.z * r.z;
 	float x = l.x * r.w + l.w * r.x + l.y * r.z - l.z * r.y;
@@ -61,8 +61,17 @@ quaternion MultiplyQuaternionByQuaternion(const quaternion& l, const quaternion&
 	return Quaternion(x, y, z, w);
 }
 
-inline quaternion operator * (const quaternion& q1, const quaternion& q2){
-	return MultiplyQuaternionByQuaternion(q1, q2);
+inline quaternion operator * (quaternion q1, quaternion q2){
+	//float w = l.w * r.w - l.x * r.x - l.y * r.y - l.z * r.z;
+	//float x = l.x * r.w + l.w * r.x + l.y * r.z - l.z * r.y;
+	//float y = l.y * r.w + l.w * r.y + l.z * r.x - l.x * r.z;
+	//float z = l.z * r.w + l.w * r.z + l.x * r.y - l.y * r.x;
+
+
+	float w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
+	float x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
+	float y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
+	float z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
 }
 
 inline quaternion MultiplyQuaternionByVector(const quaternion& q, const vector3& v){
