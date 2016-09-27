@@ -200,7 +200,7 @@ static void Win32LoadTrueTypeFont(const char* fontFilePath, u32 pixelHeight){
 }
 
 static character_atlas Win32LoadTrueTypeFontToAtlas(const char* fontFilePath, u32 pixelHeight){
-	
+
 	character_atlas* retVal = new character_atlas[128];
 
 	FT_Library ft;
@@ -438,7 +438,7 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 
 	//My mistake was is that is tried to get DC from the same window as before.
 	//But SetPixelFormat wants us to pass DC that we never SetPixelFormat before.
-	
+
 	if (sampling == true){
 
 		Win32RecreateWindow(buffer, Instance, "CubeProject", buffer->Width, buffer->Height);
@@ -484,12 +484,12 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 	/*
 	GL_ALWAYS The depth test always passes.
 	GL_NEVER The depth test never passes.
-	GL_LESS Passes if the fragment’s depth value is less than the stored depth value.
-	GL_EQUAL Passes if the fragment’s depth value is equal to the stored depth value.
-	GL_LEQUAL 	Passes if the fragment’s depth value is less than or equal to the stored depth value.
-	GL_GREATER Passes if the fragment’s depth value is greater than the stored depth value.
-	GL_NOTEQUAL Passes if the fragment’s depth value is not equal to the stored depth value.
-	GL_GEQUAL Passes if the fragment’s depth value is greater than or equal to the stored dept value.
+	GL_LESS Passes if the fragmentï¿½s depth value is less than the stored depth value.
+	GL_EQUAL Passes if the fragmentï¿½s depth value is equal to the stored depth value.
+	GL_LEQUAL 	Passes if the fragmentï¿½s depth value is less than or equal to the stored depth value.
+	GL_GREATER Passes if the fragmentï¿½s depth value is greater than the stored depth value.
+	GL_NOTEQUAL Passes if the fragmentï¿½s depth value is not equal to the stored depth value.
+	GL_GEQUAL Passes if the fragmentï¿½s depth value is greater than or equal to the stored dept value.
 	*/
 	//glDepthFunc(GL_LESS);
 	//glEnable(GL_STENCIL_TEST);
@@ -576,7 +576,7 @@ Win32ToggleFullscreen(HWND Window)
 			Width = GlobalScreen.Width;
 			Height = GlobalScreen.Height;
 			SetWindowPos(Window, HWND_TOP, 100, 100, Width, Height,
-				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);	
+				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
 		}
 		glViewport(0, 0, Width, Height);
 		GlobalScreen.currentWidth = Width;
@@ -721,7 +721,7 @@ Win32WindowProcessing(
 	return 0;
 }
 
-static void 
+static void
 Win32RecreateWindow(
 	win32_screen_buffer* Buffer,
 	HINSTANCE Instance,
@@ -1026,7 +1026,7 @@ int WINAPI WinMain(
 		EngineState->mainFramebuffer = mainFramebuffer;
 
 		GameUpdateAndRender(EngineState);
-		
+
 		delete EngineState;
 
 		HDC swapDC = GetDC(GlobalScreen.Window);
