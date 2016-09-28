@@ -50,7 +50,7 @@ enum game_shader_type{
 	SKYBOX_SHADER,
 	TEXT_SHADER,
 	SCREEN_SHADER,
-	DEPTH_SHADER
+	DEPTH_SHADER,
 };
 
 struct game_shader{
@@ -123,12 +123,16 @@ struct game_engine_state{
 	game_shader CubeShader;
 	game_shader ScreenShader;
 	game_shader DepthShader;
+	game_shader CubemapShader;
 
 	character_info* Characters;
 	character_atlas Atlas;
 
 	u32 textVAO;
 	u32 textVBO;
+
+	u32 cubemapVAO;
+	u32 cubemapTexture;
 	
 	game_framebuffer mainFramebuffer;
 };

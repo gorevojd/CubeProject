@@ -491,8 +491,9 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 	GL_NOTEQUAL Passes if the fragment�s depth value is not equal to the stored depth value.
 	GL_GEQUAL Passes if the fragment�s depth value is greater than or equal to the stored dept value.
 	*/
-	//glDepthFunc(GL_LESS);
-	//glEnable(GL_STENCIL_TEST);
+
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
 	//glStencilFunc(GL_EQUAL, 1, 0xFF);
 
 	//glEnable(GL_CULL_FACE);
@@ -807,6 +808,50 @@ int WINAPI WinMain(
 	Win32LoadTrueTypeFont("../data/Fonts/LiberationMono-Bold.ttf", 48);
 	GlobalCharacterAtlas = Win32LoadTrueTypeFontToAtlas("../data/Fonts/LiberationMono-Bold.ttf");
 
+	GLfloat cubemapVertices[] = {
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+
+		-1.0f, 1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f
+	};
+
 	GLfloat CubeVertices[] = {
 		//NOTE(Dima): Front side
 		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
@@ -918,6 +963,17 @@ int WINAPI WinMain(
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	GLuint cubemapVAO, cubemapVBO;
+	glGenVertexArrays(1, &cubemapVAO);
+	glGenBuffers(1, &cubemapVBO);
+	glBindVertexArray(cubemapVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), cubemapVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -931,9 +987,20 @@ int WINAPI WinMain(
 	//loaded_texture lavaSpecularTex("../Data/Textures/LavaTileSpecular.png");
 	//loaded_texture lavaEmissionTex("../Data/Textures/LavaTileEmission.png");
 
+	std::vector<const char*> cubemapFaces;
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_ft.jpg");
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_bk.jpg");
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_up.jpg");
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_dn.jpg");
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_rt.jpg");
+	cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_lf.jpg");
+
+	loaded_texture cubemapTexture = LoadCubemapTexture(cubemapFaces);
+
 	game_shader mainShader = LoadGameShader(SIMPLE_SHADER, "Shaders/main.vs", "Shaders/main.fs");
 	game_shader textShader = LoadGameShader(TEXT_SHADER, "Shaders/text.vs", "Shaders/text.fs");
 	game_shader screenShader = LoadGameShader(SCREEN_SHADER, "Shaders/screen.vs", "Shaders/screen.fs");
+	game_shader cubemapShader = LoadGameShader(SKYBOX_SHADER, "Shaders/cubemap.vs", "Shaders/cubemap.fs");
 
 	glm::vec3 pointLightPositions[] = {
 		glm::vec3( 40.0f, 15.0f, 0.0f),
@@ -956,7 +1023,7 @@ int WINAPI WinMain(
 		0.1f);
 	point_light lits[4];
 	for (int i = 0; i < 4; i++){
-		lits[i] = point_light(pointLightPositions[i], pointLightDiffuseColors[i], pointLightDiffuseColors[i], 0.09f, 500.0f);
+		lits[i] = point_light(pointLightPositions[i], pointLightDiffuseColors[i], pointLightDiffuseColors[i], 0.08f, 500.0f);
 	}
 
 	glUseProgram(mainShader.program);
@@ -968,11 +1035,11 @@ int WINAPI WinMain(
 	}
 	UniformDirectionalLight(mainShader, dirLit, "dirLight");
 	GLint matShineLoc = glGetUniformLocation(mainShader.program, "material.shininess");
-	glUniform1f(matShineLoc, 32.0f);
+	glUniform1f(matShineLoc, 16.0f);
 	glUseProgram(0);
 
-	GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Spalding/NBA BASKETBALL.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
-	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/House/house.fbx", 1.0f));
+	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Scenes/MainScene.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
+	GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/Scenes/MainScene.fbx", 1.0f));
 
 
 	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Animations/D_idle.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
@@ -1014,15 +1081,23 @@ int WINAPI WinMain(
 		EngineState->Input = GlobalGameInput;
 		EngineState->Time = &GlobalTime;
 		EngineState->ScreenBuffer = &Buffer;
+
 		EngineState->MainShader = mainShader;
 		EngineState->TextShader = textShader;
 		EngineState->ScreenShader = screenShader;
+		
+		EngineState->CubemapShader = cubemapShader;
+		EngineState->cubemapTexture = cubemapTexture.texture;
+		EngineState->cubemapVAO = cubemapVAO; 
+
 		EngineState->textVAO = textVAO;
 		EngineState->textVBO = textVBO;
 		EngineState->Characters = characters;
 		EngineState->Atlas = GlobalCharacterAtlas;
+
 		EngineState->MeshThreads = GlobalMeshThreads;
 		EngineState->Models = GlobalModelsArray;
+
 		EngineState->mainFramebuffer = mainFramebuffer;
 
 		GameUpdateAndRender(EngineState);

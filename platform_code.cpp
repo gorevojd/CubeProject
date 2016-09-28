@@ -162,11 +162,21 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 	glUniform3f(ViewPosLocation, State->Camera->position.x, State->Camera->position.y, State->Camera->position.z);
 	glUseProgram(0);
 
+	glUseProgram(State->CubemapShader.program);
+	GLint CubemapProjectionLocation = glGetUniformLocation(State->CubemapShader.program, "projection");
+	GLint CubemapViewLocation = glGetUniformLocation(State->CubemapShader.program, "view");
+	glUniformMatrix4fv(CubemapProjectionLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
+	glUniformMatrix4fv(CubemapViewLocation, 1, GL_FALSE, glm::value_ptr(glm::mat4(glm::mat3(ViewMatrix))));
+	glUseProgram(0);
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER, State->mainFramebuffer.FramebufferId);
 	glViewport(0, 0, State->mainFramebuffer.Width, State->mainFramebuffer.Height);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+
+	//RenderSkybox(State->cubemapVAO, State->cubemapTexture, State->CubemapShader);
 	for (int i = 0; i < State->Models.size(); i++){
 		RenderModel(&State->Models[i], State->MainShader);
 	}
@@ -184,6 +194,7 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 	itoa(State->Time->deltaTime * 1000, dtStr, 10);
 	char thrStr[20];
 	itoa(State->MeshThreads.size(), thrStr, 10);
+	
 
 	RenderText("FPS: " + std::string(fpsStr),
 		v2(10, 10),

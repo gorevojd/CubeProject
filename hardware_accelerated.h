@@ -81,6 +81,24 @@ void RenderFramebuffer(const game_framebuffer& framebuffer, game_shader shader){
 	glUseProgram(0);
 }
 
+void RenderSkybox(u32 VAO, u32 cubemapTexture, game_shader shader){
+	//STUDY(Dima): Study glDepthMask
+	glDepthMask(GL_FALSE);
+	glUseProgram(shader.program);
+	
+	glBindVertexArray(VAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	glUniform1i(glGetUniformLocation(shader.program, "skybox"), 0);
+	
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	
+	//STUDY(Dima): Study glDepthMask
+	glDepthMask(GL_TRUE);
+	glUseProgram(0);
+}
+
 void RenderVoxelMeshThreads(std::vector<voxel_mesh_chunk>& meshThreads, game_shader shader, u32 diffTex, u32 specTex, u32 emissTex){
 	glUseProgram(shader.program);
 

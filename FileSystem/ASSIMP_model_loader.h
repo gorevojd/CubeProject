@@ -86,7 +86,7 @@ GLint TextureFromFile(const char* path, std::string directory)
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
 	GLuint textureID;
-	loaded_texture tempTex(filename.c_str());
+	loaded_texture tempTex = LoadTexture(filename.c_str());
 	textureID = tempTex.texture;
 	return textureID;
 }

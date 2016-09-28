@@ -30,7 +30,7 @@ GLuint LoadTextureFromFile(std::string filePath){
 	//std::string filename = std::string(fileRelativePath);
 	//filename = directory + '/' + filename;
 	GLuint textureID;
-	loaded_texture tempTex(filePath.c_str());
+	loaded_texture tempTex = LoadTexture(filePath.c_str());
 	textureID = tempTex.texture;
 	return textureID;
 }

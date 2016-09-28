@@ -16,14 +16,14 @@ struct DirLight{
 
 struct PointLight{
 	vec3 position;
-	
+
 	float constant;
 	float linear;
 	float quadratic;
 
 	vec3 diffuse;
 	vec3 specular;
-	vec3 ambient;	
+	vec3 ambient;
 };
 
 struct PhongMaterial{
@@ -44,7 +44,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 viewPos;
 
 vec3 CalcDirLight(DirLight lit, vec3 normal, vec3 viewDir){
-	
+
 	vec3 lightDir = normalize(lit.direction);
 	vec3 reflectDir = normalize(reflect(lightDir, normal));
 	vec3 halfWayDir = normalize(-viewDir + reflectDir);
@@ -64,7 +64,7 @@ vec3 CalcDirLight(DirLight lit, vec3 normal, vec3 viewDir){
 }
 
 vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir){
-	
+
 	vec3 lightDir = normalize(fragpos - lit.position);
 	vec3 reflectDir = reflect(lightDir, normal);
 	vec3 halfWayDir = normalize(-viewDir + reflectDir);
@@ -80,7 +80,7 @@ vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir){
 	vec3 diffuse = lit.diffuse * diff * sampledColor.xyz;
 	vec3 specular = lit.specular * spec * sampledSpec.xyz;
 
-	float dist = length(lightDir);
+	float dist = length(lit.position - fragpos);
 	float attenuation = 1.0 / (lit.constant + lit.linear * dist + lit.quadratic * dist * dist);
 
 	ambient *= attenuation;
@@ -92,7 +92,7 @@ vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir){
 
 void main(){
 	vec3 res = vec3(0.0, 0.0, 0.0);
-	
+
 	vec3 normal;
 	if(material.withNormalMap){
 		normal = texture(material.normal, fs_in.TexCoords).rgb;
@@ -106,9 +106,9 @@ void main(){
 	normal = transpose(fs_in.TBN) * vec3(0.0, 0.0, 1.0);
 
 	vec3 viewDir = normalize(fs_in.FragPos.xyz - viewPos);
-	res += CalcDirLight(dirLight, normal, viewDir);
+	//res += CalcDirLight(dirLight, normal, viewDir);
 	for(int i = 0; i < MAX_POINT_LIGHTS; i++){
-		//res+=CalcPointLight(pointLights[i], fs_in.FragPos, normal, viewDir);
+		res+=CalcPointLight(pointLights[i], fs_in.FragPos, normal, viewDir);
 	}
 
 	gl_FragColor = vec4(res, 1.0);
