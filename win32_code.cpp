@@ -497,7 +497,7 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 	//glStencilFunc(GL_EQUAL, 1, 0xFF);
 
 	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
+	//glCullFace(GL_BACK);
 	//glFrontFace(GL_CCW);
 
 	glEnable(GL_BLEND);
@@ -1038,7 +1038,7 @@ int WINAPI WinMain(
 	glUniform1f(matShineLoc, 16.0f);
 	glUseProgram(0);
 
-	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Scenes/MainScene.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
+	//GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Spalding/NBA BASKETBALL.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
 	GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/Scenes/MainScene.fbx", 1.0f));
 
 
