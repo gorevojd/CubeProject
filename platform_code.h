@@ -1,5 +1,7 @@
 #ifndef PLATFORM_CODE_H
 
+#define ENGINE_DEBUG_MODE 1
+
 #include "common_code.h"
 
 #include "Rendering/lights_code.h"
@@ -33,7 +35,7 @@ struct game_settings{
 
 	int windowWidth;
 	int windowHeight;
-	
+
 	bool Fullscreen;
 };
 
@@ -109,12 +111,51 @@ struct game_camera{
 	}
 };
 
-struct game_engine_state{
-	game_screen_buffer* ScreenBuffer;
-	game_input* Input;
-	game_camera* Camera;
-	game_time* Time;
+struct debug_read_file_result{
+	void* contents;
+	u32 size;
+};
 
+#define DEBUG_PLATFORM_READ_ENTIRE_FILE(name) debug_read_file_result name(const char* fileName)
+typedef DEBUG_PLATFORM_READ_ENTIRE_FILE(debug_platform_read_entire_file);
+
+#define DEBUG_PLATFORM_WRITE_ENTIRE_FILE(name) bool name(const char* FileName, void* Memory, u32 MemorySize)
+typedef DEBUG_PLATFORM_WRITE_ENTIRE_FILE(debug_platform_write_entire_file);
+
+#define DEBUG_PLATFORM_FREE_FILE_MEMORY(name) void name(void* Memory)
+typedef DEBUG_PLATFORM_FREE_FILE_MEMORY(debug_platform_free_file_memory);
+
+enum{
+	DebugCycleCounter_GameUpdateAndRender,
+	DebugCycleCounter_Count
+};
+
+
+struct debug_cycle_counter{
+	u64 CycleCount;
+};
+
+struct game_memory{
+	bool IsInitialized;
+
+	u32 PermanentStorageSize;
+	void* PermanentStorage;
+
+	u32 TransientStorageSize;
+	void* TransientStorage;
+
+	debug_platform_read_entire_file* DEBUGPlatformReadEntireFile;
+	debug_platform_write_entire_file* DEBUGPlatformWriteEntireFile;
+	debug_platform_free_file_memory* DEBUGPlatformFreeFileMemory;
+#if ENGINE_DEBUG_MODE
+	debug_cycle_counter Counters[256];
+#endif
+};
+
+struct game_engine_state{
+
+	game_time* Time;
+	game_camera* Camera;
 	std::vector<voxel_mesh_chunk> MeshThreads;
 	std::vector<Model> Models;
 
@@ -133,11 +174,11 @@ struct game_engine_state{
 
 	u32 cubemapVAO;
 	u32 cubemapTexture;
-	
+
 	game_framebuffer mainFramebuffer;
 };
 
-#define GAME_UPDATE_AND_RENDER(name) void name(game_engine_state* State)
+#define GAME_UPDATE_AND_RENDER(name) void name(game_memory* Memory, game_input* Input, game_screen_buffer* ScreenBuffer, game_engine_state* State)
 typedef GAME_UPDATE_AND_RENDER(game_update_and_render);
 GAME_UPDATE_AND_RENDER(GameUpdateAndRender);
 
@@ -145,21 +186,16 @@ void UniformMaterial(game_shader shader, phong_material pmat, std::string unVarN
 void UniformPointLight(game_shader shader, point_light lit, std::string unVarName);
 void UniformDirectionalLight(game_shader shader, directional_light lit, std::string unVarName);
 
-struct debug_read_file_result{
-	void* contents;
-	u32 size;
-};
 
-#define DEBUG_PLATFORM_READ_ENTIRE_FILE(name) debug_read_file_result name(const char* fileName)
-typedef DEBUG_PLATFORM_READ_ENTIRE_FILE(debug_platform_read_entire_file);
+extern game_memory* DebugGlobalMemory;
+#if _MSC_VER
+#define BEGIN_TIMED_BLOCK(ID) u32 StartCycleCount##ID= __rdtsc();
+#define END_TIMED_BLOCK(ID) Memory->Counters[DebugCycleCounter_##ID] += __rdtsc() - StartSycleCount;
+#else
+#define BEGIN_TIMED_BLOCK(ID)
+#define END_TIMED_BLOCK(ID)
+#endif
 
-#define DEBUG_PLATFORM_FREE_FILE_MEMORY(name) void name(void* Memory)
-typedef DEBUG_PLATFORM_FREE_FILE_MEMORY(debug_platform_free_file_memory);
-
-struct game_memory{
-	debug_platform_read_entire_file* DEBUGPlatformReadEntireFile;
-	debug_platform_free_file_memory* DEBUGPlatformFreeFileMemory;
-};
 
 #define PLATFORM_CODE_H
 #endif

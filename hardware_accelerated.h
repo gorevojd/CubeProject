@@ -74,6 +74,14 @@ void RenderFramebuffer(const game_framebuffer& framebuffer, game_shader shader){
 	glUseProgram(shader.program);
 	glBindVertexArray(framebuffer.VAO);
 	glActiveTexture(GL_TEXTURE0);
+#if 0
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.FramebufferId);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer.FramebufferId);
+	glBlitFramebuffer(
+		0, 0, framebuffer.Width, framebuffer.Height,
+		0, 0, framebuffer.Width, framebuffer.Height,
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#endif
 	glBindTexture(GL_TEXTURE_2D, framebuffer.AttachmentTextureId);
 	//glUniform1i(glGetUniformLocation(shader.program, "screenTexture"), 0);
 	glDrawArrays(GL_TRIANGLES, 0, 6);

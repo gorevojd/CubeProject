@@ -99,16 +99,24 @@ glm::mat4 CalcDirLightSpaceMatrix(const directional_light& lit){
 	return lightSpaceMatrix;
 }
 
+#if ENGINE_DEBUG_MODE
+game_memory* DebugGlobalMemory;
+#endif
+
 //extern "C" __declspec(dllexport) GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 {
+#if ENGINE_DEBUG_STATE
+	DebugGlobalMemory = Memory;
+#endif
+
 	//glViewport(0, 0, State->ScreenBuffer->Width, State->ScreenBuffer->Height);
 
 	int contrID = 0;
-	float leftValue = State->Input->controllers[contrID].LeftKey.IsDown == true ? 1.0f : 0.0f;
-	float rightValue = State->Input->controllers[contrID].RightKey.IsDown == true ? 1.0f : 0.0f;
-	float upValue = State->Input->controllers[contrID].UpKey.IsDown == true ? 1.0f : 0.0f;
-	float downValue = State->Input->controllers[contrID].DownKey.IsDown == true ? 1.0f : 0.0f;
+	float leftValue = Input->controllers[contrID].LeftKey.IsDown == true ? 1.0f : 0.0f;
+	float rightValue = Input->controllers[contrID].RightKey.IsDown == true ? 1.0f : 0.0f;
+	float upValue = Input->controllers[contrID].UpKey.IsDown == true ? 1.0f : 0.0f;
+	float downValue = Input->controllers[contrID].DownKey.IsDown == true ? 1.0f : 0.0f;
 
 	float hValue = leftValue - rightValue;
 	float vValue = upValue - downValue;
@@ -118,16 +126,16 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 		moveVec = glm::normalize(moveVec);
 	}
 
-	float cameraSpeed = State->Input->controllers[0].ShiftKey.IsDown == true ? 40.0f : 10.0f;
-	cameraSpeed = State->Input->controllers[0].SpaceKey.IsDown == true ? cameraSpeed * 6.0f : cameraSpeed;
+	float cameraSpeed = Input->controllers[0].ShiftKey.IsDown == true ? 40.0f : 10.0f;
+	cameraSpeed = Input->controllers[0].SpaceKey.IsDown == true ? cameraSpeed * 6.0f : cameraSpeed;
 	State->Camera->position += State->Camera->front * moveVec.z * State->Time->deltaTime * cameraSpeed;
 	State->Camera->position += State->Camera->right * moveVec.x * State->Time->deltaTime * cameraSpeed;
 
-	float xoffset =  State->Input->controllers[contrID].DeltaMouseX;
-	float yoffset = -State->Input->controllers[contrID].DeltaMouseY;
+	float xoffset =  Input->controllers[contrID].DeltaMouseX;
+	float yoffset = -Input->controllers[contrID].DeltaMouseY;
 
 
-	if ((xoffset != 0.0f || yoffset != 0.0f) && State->Input->controllers[0].CapturingMouse == true){
+	if ((xoffset != 0.0f || yoffset != 0.0f) && Input->controllers[0].CapturingMouse == true){
 
 		float mouseSens = 0.1f;
 		xoffset *= mouseSens;
@@ -151,7 +159,7 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 	GLint ModelLocation = glGetUniformLocation(State->MainShader.program, "model");
 	GLint ViewPosLocation = glGetUniformLocation(State->MainShader.program, "viewPos");
 
-	glm::mat4 ProjectionMatrix = glm::perspective(45.0f, (float)State->ScreenBuffer->Width / (float)State->ScreenBuffer->Height, 0.01f, 1000.0f);
+	glm::mat4 ProjectionMatrix = glm::perspective(45.0f, (float)ScreenBuffer->Width / (float)ScreenBuffer->Height, 0.01f, 1000.0f);
 	glm::mat4 ViewMatrix = glm::lookAt(
 		State->Camera->position,
 		State->Camera->position + State->Camera->front,
@@ -182,7 +190,7 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glViewport(0, 0, State->ScreenBuffer->currentWidth, State->ScreenBuffer->currentHeight);
+	glViewport(0, 0, ScreenBuffer->currentWidth, ScreenBuffer->currentHeight);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -200,14 +208,14 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 		v2(10, 10),
 		State->Atlas, State->TextShader,
 		State->textVAO, State->textVBO,
-		State->ScreenBuffer->Width,
-		State->ScreenBuffer->Height,
+		ScreenBuffer->Width,
+		ScreenBuffer->Height,
 		0.4f);
 	RenderText("DeltaTime: " + std::string(dtStr) + "ms",
 		v2(10, 30),
 		State->Atlas, State->TextShader,
 		State->textVAO, State->textVBO,
-		State->ScreenBuffer->Width,
-		State->ScreenBuffer->Height,
+		ScreenBuffer->Width,
+		ScreenBuffer->Height,
 		0.4f);
 }
