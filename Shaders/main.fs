@@ -43,11 +43,15 @@ uniform DirLight dirLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 viewPos;
 
-vec3 CalcDirLight(DirLight lit, vec3 normal, vec3 viewDir){
+vec3 CalcDirLight(DirLight lit, vec3 normal, vec3 viewDir, float gamma = 2.2){
 
 	vec3 lightDir = normalize(lit.direction);
 	vec3 reflectDir = normalize(reflect(lightDir, normal));
 	vec3 halfWayDir = normalize(-viewDir + reflectDir);
+
+	//Gamma Correction
+	//vec4 sampledColor = pow(texture(material.diffuse, fs_in.TexCoords), vec4(vec3(gamma), 1.0));
+	//vec4 sampledSpec = pow(texture(material.specular, fs_in.TexCoords), vec4(vec3(gamma), 1.0));
 
 	vec4 sampledColor = texture(material.diffuse, fs_in.TexCoords);
 	vec4 sampledSpec = texture(material.specular, fs_in.TexCoords);
@@ -63,11 +67,15 @@ vec3 CalcDirLight(DirLight lit, vec3 normal, vec3 viewDir){
 	return ambient + diffuse + specular;
 }
 
-vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir){
+vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir, float gamma = 2.2){
 
 	vec3 lightDir = normalize(fragpos - lit.position);
 	vec3 reflectDir = reflect(lightDir, normal);
 	vec3 halfWayDir = normalize(-viewDir + reflectDir);
+
+	//WHEN Gamma correction
+	//vec4 sampledColor = pow(texture(material.diffuse, fs_in.TexCoords), vec4(vec3(gamma), 1.0));
+	//vec4 sampledSpec = pow(texture(material.specular, fs_in.TexCoords), vec4(vec3(gamma), 1.0));
 
 	vec4 sampledColor = texture(material.diffuse, fs_in.TexCoords);
 	vec4 sampledSpec = texture(material.specular, fs_in.TexCoords);
@@ -91,6 +99,7 @@ vec3 CalcPointLight(PointLight lit, vec3 fragpos, vec3 normal, vec3 viewDir){
 }
 
 void main(){
+
 	vec3 res = vec3(0.0, 0.0, 0.0);
 
 	vec3 normal;
@@ -103,7 +112,9 @@ void main(){
 		//normal = fs_in.TBN * vec3(0.0, 0.0, 1.0);
 		normal = fs_in.TBN[2];
 	}
-	normal = transpose(fs_in.TBN) * vec3(0.0, 0.0, 1.0);
+
+	//SAME AS GENERATE NORMALS
+	//normal = transpose(fs_in.TBN) * vec3(0.0, 0.0, 1.0);
 
 	vec3 viewDir = normalize(fs_in.FragPos.xyz - viewPos);
 	//res += CalcDirLight(dirLight, normal, viewDir);
@@ -111,5 +122,8 @@ void main(){
 		res+=CalcPointLight(pointLights[i], fs_in.FragPos, normal, viewDir);
 	}
 
+	//GAMMA CORRECTION
+	// float gamma = 2.2;
+	// gl_FragColor = vec4(pow(res, vec3(1.0 / gamma)), 1.0);
 	gl_FragColor = vec4(res, 1.0);
 }

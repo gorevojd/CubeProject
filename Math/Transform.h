@@ -12,9 +12,9 @@ struct transform{
 
 inline transform DefaultTransform(){
 	transform trn;
-	trn.Offset = vector3(0.0f);
+	trn.Offset = Vector3(0.0f);
 	trn.Rotation = IdentityQuaternion();
-	trn.Scaling = vector3(1.0f);
+	trn.Scaling = Vector3(1.0f);
 	return trn;
 }
 

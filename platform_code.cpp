@@ -159,7 +159,7 @@ GAME_UPDATE_AND_RENDER(GameUpdateAndRender)
 	GLint ModelLocation = glGetUniformLocation(State->MainShader.program, "model");
 	GLint ViewPosLocation = glGetUniformLocation(State->MainShader.program, "viewPos");
 
-	glm::mat4 ProjectionMatrix = glm::perspective(45.0f, (float)ScreenBuffer->Width / (float)ScreenBuffer->Height, 0.01f, 1000.0f);
+	glm::mat4 ProjectionMatrix = glm::perspective(45.0f, (float)ScreenBuffer->Width / (float)ScreenBuffer->Height, 0.03f, 1000.0f);
 	glm::mat4 ViewMatrix = glm::lookAt(
 		State->Camera->position,
 		State->Camera->position + State->Camera->front,

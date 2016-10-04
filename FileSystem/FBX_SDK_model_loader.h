@@ -425,7 +425,7 @@ inline Model FBX_SDK_LoadModel(FbxManager* sdkManager, std::string filePath, flo
 	Model model;
 	model.directory = filePath.substr(0, filePath.find_last_of('/'));
 	model.localTransformation = DefaultTransform();
-	TransformScale(model.localTransformation, vector3(scale));
+	TransformScale(model.localTransformation, Vector3(scale));
 
 	FbxIOSettings* iosett = FbxIOSettings::Create(sdkManager, IOSROOT);
 	sdkManager->SetIOSettings(iosett);

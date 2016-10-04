@@ -692,21 +692,23 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
     GL_LESS Passes if the fragment�s depth value is less than the stored depth value.
     GL_EQUAL Passes if the fragment�s depth value is equal to the stored depth value.
     GL_LEQUAL   Passes if the fragment�s depth value is less than or equal to the stored depth value.
-    GL_GREATER Passes if the fragment�s depth value is greater than the stored depth value.
-    GL_NOTEQUAL Passes if the fragment�s depth value is not equal to the stored depth value.
-    GL_GEQUAL Passes if the fragment�s depth value is greater than or equal to the stored dept value.
-    */
+	GL_GREATER Passes if the fragment�s depth value is greater than the stored depth value.
+	GL_NOTEQUAL Passes if the fragment�s depth value is not equal to the stored depth value.
+	GL_GEQUAL Passes if the fragment�s depth value is greater than or equal to the stored dept value.
+	*/
 
-    glDepthFunc(GL_LESS);
-    glEnable(GL_STENCIL_TEST);
-    //glStencilFunc(GL_EQUAL, 1, 0xFF);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	//glStencilFunc(GL_EQUAL, 1, 0xFF);
 
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glFrontFace(GL_CCW);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	//glFrontFace(GL_CCW);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//glEnable(GL_FRAMEBUFFER_SRGB);
 
 #if 0
     if (wglSwapIntervalEXT(0))
@@ -1246,6 +1248,7 @@ int WINAPI WinMain(
 
     //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Spalding/NBA BASKETBALL.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
     GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/Scenes/MainScene.fbx", 1.0f));
+	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/DeadAnarchist/Anarchist.fbx", 0.12f));
 
 
     //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Animations/D_idle.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));

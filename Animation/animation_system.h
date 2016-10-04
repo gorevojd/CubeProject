@@ -1,7 +1,7 @@
 #ifndef ANIMATION_SYSTEM_H
 
 #include "../common_code.h"
-#include "../Animation/skeleton_code.h"
+#include "../Animation/skeleton_system.h"
 
 struct JointTransform{
 	glm::vec3 translation;

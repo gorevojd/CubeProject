@@ -9,7 +9,6 @@
 #include "../FileSystem/SOIL_texture_loader.h"
 
 #include "../Animation/animation_system.h"
-#include "../Animation/skeleton_code.h"
 
 glm::mat4 AiMatToGLM(aiMatrix4x4 aiMatr){
 	glm::mat4 res;
@@ -325,6 +324,7 @@ Mesh ProcessMesh(Model* model, aiMesh* mesh, const aiScene* scene)
 
 void ProcessNode(Model* model, aiNode* node, const aiScene* scene)
 {
+
 	for (GLuint i = 0; i < node->mNumMeshes; i++){
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		Mesh pushMesh = ProcessMesh(model, mesh, scene);
@@ -366,7 +366,7 @@ inline Model ASSIMP_LoadModel(std::string path,
 		model.skeleton = skeleton;
 	}
 
-	TransformScale(model.localTransformation, vector3(scale));
+	TransformScale(model.localTransformation, Vector3(scale));
 	ProcessNode(&model, scene->mRootNode, scene);
 	return model;
 }
