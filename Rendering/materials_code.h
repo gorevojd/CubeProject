@@ -34,23 +34,25 @@ struct phong_material{
 	}
 };
 
-//inline void UniformPhongMaterial(game_shader shader, phong_material mater){
-//	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, mater.diffuseTexture);
-//	glUniform1i(glGetUniformLocation(shader.program, "material.diffuse"), 0);
-//
-//	glActiveTexture(GL_TEXTURE1);
-//	glBindTexture(GL_TEXTURE_2D, mater.specularTexture);
-//	glUniform1i(glGetUniformLocation(shader.program, "material.specular"), 1);
-//
-//	glActiveTexture(GL_TEXTURE2);
-//	glBindTexture(GL_TEXTURE_2D, mater.normalMapTexture);
-//	glUniform1i(glGetUniformLocation(shader.program, "material.normal"), 2);
-//
-//	glActiveTexture(GL_TEXTURE3);
-//	glBindTexture(GL_TEXTURE_2D, mater.emissionTexture);
-//	glUniform1i(glGetUniformLocation(shader.program, "material.emission"), 3);
-//}
+/*
+inline void UniformPhongMaterial(loaded_shader shader, phong_material mater){
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mater.diffuseTexture);
+	glUniform1i(glGetUniformLocation(shader.program, "material.diffuse"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, mater.specularTexture);
+	glUniform1i(glGetUniformLocation(shader.program, "material.specular"), 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, mater.normalMapTexture);
+	glUniform1i(glGetUniformLocation(shader.program, "material.normal"), 2);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, mater.emissionTexture);
+	glUniform1i(glGetUniformLocation(shader.program, "material.emission"), 3);
+}
+*/
 
 #define MATERIAL_MY_IMPL_H
 #endif

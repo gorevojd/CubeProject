@@ -2,10 +2,6 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
-#include "FileSystem/SOIL_texture_loader.h"
-#include "FileSystem/ASSIMP_model_loader.h"
-#include "FileSystem/FBX_SDK_model_loader.h"
-
 #include <mmsystem.h>
 #include <Windows.h>
 #include <dsound.h>
@@ -39,7 +35,6 @@ void ProcessGameButtonState(game_button_state* State, bool IsDown, bool WasDown)
 void ProcessPendingMessagesToController(int cid);
 static void Win32RecreateWindow(win32_screen_buffer* Buffer, HINSTANCE Instance, const char* windowName, int windowWidth, int windowHeight);
 
-static FbxManager* GlobalFBXManager;
 static bool GlobalRunning = false;
 static win32_screen_buffer GlobalScreen;
 static game_input* GlobalGameInput = new game_input();
@@ -48,10 +43,7 @@ static game_time GlobalTime;
 static game_memory GlobalGameMemory;
 static character_info* characters = new character_info[128];
 static character_atlas GlobalCharacterAtlas;
-static std::vector<voxel_mesh_chunk> GlobalMeshThreads;
-static std::vector<Model> GlobalModelsArray;
 static WINDOWPLACEMENT GlobalWindowPosition;
-//std::vector<phong_material> GlobalMaterialsArray;
 
 sound_buffer Win32InitDirectSound(HWND window){
     HINSTANCE DSoundLib = LoadLibraryA("dsound.dll");
@@ -255,65 +247,6 @@ DEBUG_PLATFORM_FREE_FILE_MEMORY(DEBUGPlatformFreeFileMemory){
     }
 }
 
-game_shader LoadGameShader(
-    game_shader_type type,
-    const char* vertexPath,
-    const char* fragmentPath)
-{
-    debug_read_file_result vertShaderFile = DEBUGPlatformReadEntireFile(vertexPath);
-    debug_read_file_result fragmShaderFile = DEBUGPlatformReadEntireFile(fragmentPath);
-
-    const GLchar* vertShaderSrc = (char*)vertShaderFile.contents;
-    const GLchar* fragmShaderSrc = (char*)fragmShaderFile.contents;
-
-    game_shader result;
-    result.type = type;
-
-    GLuint vertex, fragment;
-    GLint success;
-    GLchar infoLog[512];
-    vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vertShaderSrc, NULL);
-    glCompileShader(vertex);
-    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        OutputDebugStringA("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n");
-        OutputDebugStringA(infoLog);
-    }
-
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fragmShaderSrc, NULL);
-    glCompileShader(fragment);
-    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-        OutputDebugStringA("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n");
-        OutputDebugStringA(infoLog);
-    }
-
-    result.program = glCreateProgram();
-    glAttachShader(result.program, vertex);
-    glAttachShader(result.program, fragment);
-    glLinkProgram(result.program);
-    glGetProgramiv(result.program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(result.program, 512, NULL, infoLog);
-        OutputDebugStringA("ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n");
-        OutputDebugStringA(infoLog);
-    }
-
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-
-    DEBUGPlatformFreeFileMemory(vertShaderFile.contents);
-    DEBUGPlatformFreeFileMemory(fragmShaderFile.contents);
-
-    return result;
-}
 
 static void Win32LoadTrueTypeFont(const char* fontFilePath, u32 pixelHeight){
     FT_Library ft;
@@ -498,113 +431,7 @@ void ProcessEndOfFrameTime(game_time& appTime){
     appTime.fps = 1.0f / deltaTime;
 }
 
-static game_framebuffer SetupFramebuffer(int w, int h, u32 VAO, int samples = 4){
-    game_framebuffer res;
 
-#if 1
-    GLuint fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    GLuint rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
-        //TODO(Dima): Logging
-        Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-#else
-	//NOTE(Dima): Not working
-	GLuint fbo;
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	GLuint texture;
-	glGenTextures(1, &texture);
-
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, w, h, GL_TRUE);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture, 0);
-
-	GLuint rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, w, h);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
-		//TODO(Dima): Logging
-		Assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-#endif
-
-
-    res.FramebufferId = fbo;
-    res.AttachmentTextureId = texture;
-    res.VAO = VAO;
-    res.Width = w;
-    res.Height = h;
-
-    return res;
-}
-
-static game_framebuffer SetupDepthMapFramebuffer(u32 VAO){
-    GLuint depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-
-    const u32 SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    GLuint depthMap;
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-        SHADOW_WIDTH, SHADOW_HEIGHT, 0,
-        GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    game_framebuffer res;
-    res.AttachmentTextureId = depthMap;
-    res.FramebufferId = depthMapFBO;
-    res.Width = SHADOW_WIDTH;
-    res.Height = SHADOW_HEIGHT;
-    res.VAO = VAO;
-
-    return res;
-}
 
 static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sampling, int numberOfSamples = 4){
     PIXELFORMATDESCRIPTOR pfd =
@@ -710,8 +537,8 @@ static void InitOpenGL(win32_screen_buffer* buffer, HINSTANCE Instance, bool sam
 
 	//glEnable(GL_FRAMEBUFFER_SRGB);
 
-#if 0
-    if (wglSwapIntervalEXT(0))
+#if 1
+    if (wglSwapIntervalEXT(2))
     {
         OutputDebugStringA("Swap interval has been set.\n");
     }
@@ -825,7 +652,7 @@ Win32InitScreenBuffer(win32_screen_buffer* Buffer, int width, int height)
     Buffer->currentHeight = height;
     Buffer->fullscreenWidth = w;
     Buffer->fullscreenHeight = h;
-}
+} 
 
 void ProcessGameButtonState(game_button_state* State, bool IsDown, bool WasDown){
     State->IsDown = IsDown;
@@ -971,9 +798,7 @@ int WINAPI WinMain(
     LPSTR ComandLine,
     int ComandShow)
 {
-    GlobalFBXManager = FbxManager::Create();
-
-    game_memory GameMemory;
+	game_memory GameMemory = {};
     GameMemory.DEBUGPlatformWriteEntireFile = DEBUGPlatformWriteEntireFile;
     GameMemory.DEBUGPlatformFreeFileMemory = DEBUGPlatformFreeFileMemory;
     GameMemory.DEBUGPlatformReadEntireFile = DEBUGPlatformReadEntireFile;
@@ -1016,249 +841,6 @@ int WINAPI WinMain(
     Win32LoadTrueTypeFont("../data/Fonts/LiberationMono-Bold.ttf", 48);
     GlobalCharacterAtlas = Win32LoadTrueTypeFontToAtlas("../data/Fonts/LiberationMono-Bold.ttf");
 
-    GLfloat cubemapVertices[] = {
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f
-    };
-
-    GLfloat CubeVertices[] = {
-        //NOTE(Dima): Front side
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        //NOTE(Dima): Top side
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        //NOTE(Dima): Right side
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        //NOTE(Dima): Left side
-        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        //NOTE(Dima): Back side
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-        //NOTE(Dima): Down side
-        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f
-    };
-
-    GLuint CubeIndices[] = {
-        0, 1, 2,
-        0, 2, 3,
-
-        4, 5, 6,
-        4, 6, 7,
-
-        8, 9, 10,
-        8, 10, 11,
-
-        12, 13, 14,
-        12, 14, 15,
-
-        16, 17, 18,
-        16, 18, 19,
-
-        20, 21, 22,
-        20, 22, 23
-    };
-
-    GLfloat ScreenVertices[] = {
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 1.0f, 1.0f
-    };
-
-    GLuint QuadIndices[] = {
-        0, 1, 2,
-        0, 2, 3
-    };
-
-    GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVertices), CubeVertices, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(CubeIndices), CubeIndices, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    GLuint textVBO;
-    GLuint textVAO;
-    glGenVertexArrays(1, &textVAO);
-    glGenBuffers(1, &textVBO);
-    glBindVertexArray(textVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    GLuint screenVAO, screenVBO, screenEBO;
-    glGenVertexArrays(1, &screenVAO);
-    glGenBuffers(1, &screenVBO);
-    glGenBuffers(1, &screenEBO);
-    glBindVertexArray(screenVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(ScreenVertices), ScreenVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    GLuint cubemapVAO, cubemapVBO;
-    glGenVertexArrays(1, &cubemapVAO);
-    glGenBuffers(1, &cubemapVBO);
-    glBindVertexArray(cubemapVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), cubemapVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    game_framebuffer mainFramebuffer = SetupFramebuffer(windowWidth, windowHeight, screenVAO);
-
-    //loaded_texture contDiffTex("../Data/Textures/container2.png");
-    //loaded_texture contSpecTex("../Data/Textures/container2spec.png");
-    //loaded_texture contEmissTex("../Data/Textures/container2emission.jpg");
-
-    //loaded_texture lavaDiffuseTex("../Data/Textures/LavaTile.png");
-    //loaded_texture lavaSpecularTex("../Data/Textures/LavaTileSpecular.png");
-    //loaded_texture lavaEmissionTex("../Data/Textures/LavaTileEmission.png");
-
-    std::vector<const char*> cubemapFaces;
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_ft.jpg");
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_bk.jpg");
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_up.jpg");
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_dn.jpg");
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_rt.jpg");
-    cubemapFaces.push_back("../Data/Cubemaps/mp_dejavu/dejavu_lf.jpg");
-
-    loaded_texture cubemapTexture = LoadCubemapTexture(cubemapFaces);
-
-    game_shader mainShader = LoadGameShader(SIMPLE_SHADER, "../Code/Shaders/main.vs", "../Code/Shaders/main.fs");
-    game_shader textShader = LoadGameShader(TEXT_SHADER, "../Code/Shaders/text.vs", "../Code/Shaders/text.fs");
-    game_shader screenShader = LoadGameShader(SCREEN_SHADER, "../Code/Shaders/screen.vs", "../Code/Shaders/screen.fs");
-    game_shader cubemapShader = LoadGameShader(SKYBOX_SHADER, "../Code/Shaders/cubemap.vs", "../Code/Shaders/cubemap.fs");
-
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3( 40.0f, 15.0f, 0.0f),
-        glm::vec3(-40.0f, 15.0f, 0.0f),
-        glm::vec3(0.0f, 15.0f, -40.0f),
-        glm::vec3(0.0f, 15.0f,  40.0f)
-    };
-
-    glm::vec3 pointLightDiffuseColors[] = {
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(0.0f, 0.0f, 1.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    };
-
-    directional_light dirLit(
-        v3(0.5f, -0.5f, 0.5f),
-        v3(1.0f, 1.0f, 1.0f),
-        v3(1.0f, 1.0f, 1.0f),
-        0.1f);
-    point_light lits[4];
-    for (int i = 0; i < 4; i++){
-        lits[i] = point_light(pointLightPositions[i], pointLightDiffuseColors[i], pointLightDiffuseColors[i], 0.08f, 500.0f);
-    }
-
-    glUseProgram(mainShader.program);
-    for (int i = 0; i < 4; i++){
-        std::stringstream ss;
-        ss << i;
-        std::string uniformStr = "pointLights[" + ss.str() + "]";
-        UniformPointLight(mainShader, lits[i], uniformStr);
-    }
-    UniformDirectionalLight(mainShader, dirLit, "dirLight");
-    GLint matShineLoc = glGetUniformLocation(mainShader.program, "material.shininess");
-    glUniform1f(matShineLoc, 16.0f);
-    glUseProgram(0);
-
-    //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Models/Spalding/NBA BASKETBALL.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
-    GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/Scenes/MainScene.fbx", 1.0f));
-	//GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Models/DeadAnarchist/Anarchist.fbx", 0.12f));
-
-
-    //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/Animations/D_idle.fbx", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
-    //GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/Characters/DeadAnarhist/FuseModel.fbx", 1.0f));
-    //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/3dModels/Scenes/MainScene.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
-    //GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Animations/D_idle.fbx", 1.0f));
-    //GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Khata/khata.fbx", 1.0f));
-    //GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/church/3ds file.3ds", 1.0f));
-    //GlobalModelsArray.push_back(FBX_SDK_LoadModel(GlobalFBXManager, "../Data/3dModels/Scenes/MainScene.obj", 1.0f));
-    //GlobalModelsArray.push_back(ASSIMP_LoadModel("../Data/3dModels/cube2/cube2.obj", 1.2f, CREATE_SKELETON_FROM_THIS_MODEL));
 
     float screenCenterX = (float)GlobalScreen.Width / 2.0f;
     float screenCenterY = (float)GlobalScreen.Height / 2.0f;
@@ -1285,31 +867,14 @@ int WINAPI WinMain(
         Buffer.currentWidth = GlobalScreen.currentWidth;
         Buffer.currentHeight = GlobalScreen.currentHeight;
 
-        game_engine_state* EngineState = new game_engine_state;
-        EngineState->Camera = GlobalGameCamera;
-        EngineState->Time = &GlobalTime;
+		platform_dependent_context WtfContext;
+		WtfContext.Atlas = GlobalCharacterAtlas;
+		WtfContext.Characters = characters;
+		WtfContext.Time = &GlobalTime;
+		WtfContext.Camera = GlobalGameCamera;
 
-        EngineState->MainShader = mainShader;
-        EngineState->TextShader = textShader;
-        EngineState->ScreenShader = screenShader;
+        GameUpdateAndRender(&GameMemory, GlobalGameInput, &Buffer, &WtfContext);
 
-        EngineState->CubemapShader = cubemapShader;
-        EngineState->cubemapTexture = cubemapTexture.texture;
-        EngineState->cubemapVAO = cubemapVAO;
-
-        EngineState->textVAO = textVAO;
-        EngineState->textVBO = textVBO;
-        EngineState->Characters = characters;
-        EngineState->Atlas = GlobalCharacterAtlas;
-
-        EngineState->MeshThreads = GlobalMeshThreads;
-        EngineState->Models = GlobalModelsArray;
-
-        EngineState->mainFramebuffer = mainFramebuffer;
-
-        GameUpdateAndRender(&GameMemory, GlobalGameInput, &Buffer, EngineState);
-
-        delete EngineState;
 
         HDC swapDC = GetDC(GlobalScreen.Window);
         SwapBuffers(swapDC);
@@ -1318,7 +883,6 @@ int WINAPI WinMain(
         ProcessEndOfFrameTime(GlobalTime);
     }
 
-    GlobalFBXManager->Destroy();
     delete[] characters;
 
     return 0;

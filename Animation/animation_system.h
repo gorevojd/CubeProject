@@ -3,14 +3,14 @@
 #include "../common_code.h"
 #include "../Animation/skeleton_system.h"
 
-struct JointTransform{
+struct NodeTransform{
 	glm::vec3 translation;
 	glm::quat rotation;
 	glm::vec3 scale;
 };
 
 struct AnimationSample{
-	JointTransform* jointTransforms;
+	NodeTransform* jointTransforms;
 };
 
 struct AnimationClip{

@@ -3,7 +3,7 @@
 #include "../common_code.h"
 
 #pragma pack(push, 1)
-struct WAVHEADER
+struct wav_header
 {
 	u32 chunkName;		
 	u32 chunkSize;		
@@ -23,5 +23,9 @@ struct WAVHEADER
 };
 #pragma pack(pop)
 
-#define AsSET_SYSTEM_H
+struct loaded_shader{
+	u32 program;
+};
+
+#define ASSET_SYSTEM_H
 #endif

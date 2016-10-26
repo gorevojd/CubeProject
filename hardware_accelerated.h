@@ -5,7 +5,7 @@
 #include "common_code.h"
 #include "platform_code.h"
 
-void RenderMesh(const Mesh* mesh, game_shader shader){
+void RenderMesh(const Mesh* mesh, loaded_shader shader){
 	//glUseProgram(shader.program);
 	glUniform1i(glGetUniformLocation(shader.program, "material.withNormalMap"), mesh->withNormalMap);
 
@@ -58,7 +58,7 @@ void RenderMesh(const Mesh* mesh, game_shader shader){
 	//glUseProgram(0);
 }
 
-void RenderModel(const Model* model, game_shader shader){
+void RenderModel(const Model* model, loaded_shader shader){
 	glUseProgram(shader.program);
 	GLint ModelLocation = glGetUniformLocation(shader.program, "model");
 	matrix4x4 mat = GetTransformationMatrix(model->localTransformation);
@@ -70,7 +70,7 @@ void RenderModel(const Model* model, game_shader shader){
 	glUseProgram(0);
 }
 
-void RenderFramebuffer(const game_framebuffer& framebuffer, game_shader shader){
+void RenderFramebuffer(const game_framebuffer& framebuffer, loaded_shader shader){
 	glUseProgram(shader.program);
 	glBindVertexArray(framebuffer.VAO);
 	glActiveTexture(GL_TEXTURE0);
@@ -89,7 +89,7 @@ void RenderFramebuffer(const game_framebuffer& framebuffer, game_shader shader){
 	glUseProgram(0);
 }
 
-void RenderSkybox(u32 VAO, u32 cubemapTexture, game_shader shader){
+void RenderSkybox(u32 VAO, u32 cubemapTexture, loaded_shader shader){
 	//STUDY(Dima): Study glDepthMask
 	glDepthMask(GL_FALSE);
 	glUseProgram(shader.program);
@@ -107,7 +107,7 @@ void RenderSkybox(u32 VAO, u32 cubemapTexture, game_shader shader){
 	glUseProgram(0);
 }
 
-void RenderVoxelMeshThreads(std::vector<voxel_mesh_chunk>& meshThreads, game_shader shader, u32 diffTex, u32 specTex, u32 emissTex){
+void RenderVoxelMeshThreads(std::vector<voxel_mesh_chunk>& meshThreads, loaded_shader shader, u32 diffTex, u32 specTex, u32 emissTex){
 	glUseProgram(shader.program);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -133,7 +133,7 @@ void RenderVoxelMeshThreads(std::vector<voxel_mesh_chunk>& meshThreads, game_sha
 }
 
 //NOTE(Dima): Very well optimized function
-void RenderText(std::string text, v2 pos, character_atlas atlas, game_shader shader, u32 VAO, u32 VBO, int windowWidth, int windowHeight, float scale = 1.0f, v3 color = v3(1.0f, 0.0f, 1.0f)){
+void RenderText(std::string text, v2 pos, character_atlas atlas, loaded_shader shader, u32 VAO, u32 VBO, int windowWidth, int windowHeight, float scale = 1.0f, v3 color = v3(1.0f, 0.0f, 1.0f)){
 	glm::mat4 projection = glm::ortho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight);
 
 	glUseProgram(shader.program);

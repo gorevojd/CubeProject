@@ -30,7 +30,7 @@ GLuint LoadTextureFromFile(std::string filePath){
 	//std::string filename = std::string(fileRelativePath);
 	//filename = directory + '/' + filename;
 	GLuint textureID;
-	loaded_texture tempTex = LoadTexture(filePath.c_str());
+	soil_loaded_texture tempTex = LoadTexture(filePath.c_str());
 	textureID = tempTex.texture;
 	return textureID;
 }
@@ -348,11 +348,11 @@ Mesh ProcessMesh(FbxMesh* msh, Model* model){
 	//FbxProperty shineProp = mat->FindProperty(FbxLayerElement::sTextureChannelNames[8]);
 	float shininess = 32.0f;
 	FbxSurfacePhong* ph = FbxCast<FbxSurfacePhong>(mat);
-	FbxPropertyT<FbxDouble> shineProp = ph->Shininess;
-	if (shineProp.IsValid()){
-		FbxDouble shin = shineProp.Get();
-		shininess = shin;
-	}
+	//FbxPropertyT<FbxDouble> shineProp = ph->Shininess;
+	//if (shineProp.IsValid()){
+	//	FbxDouble shin = shineProp.Get();
+	//	shininess = shin;
+	//}
 #if 0
 	phong_material PhongMat;
 	PhongMat.shininess = shininess;

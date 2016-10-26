@@ -7,12 +7,11 @@
 #include "Rendering/lights_code.h"
 #include "Rendering/materials_code.h"
 
-#include "class_input.h"
 #include "class_fonts.h"
 #include "mesh_builder.h"
 #include "cube_mesh_builder.h"
 
-#include "Debugging/debugging_system.h"
+#include "FileSystem\\asset_system.h"
 
 //TODO(Dima): Chineese glyphs support
 //TODO(Dima): Text bounding box for rendering text
@@ -46,19 +45,6 @@ enum asset_type{
 	ASSET_SOUND
 };
 
-enum game_shader_type{
-	SIMPLE_SHADER,
-	CUBE_SHADER,
-	SKYBOX_SHADER,
-	TEXT_SHADER,
-	SCREEN_SHADER,
-	DEPTH_SHADER,
-};
-
-struct game_shader{
-	game_shader_type type;
-	u32 program;
-};
 
 struct game_screen_buffer{
 	int Width;
@@ -147,6 +133,7 @@ struct game_memory{
 	debug_platform_read_entire_file* DEBUGPlatformReadEntireFile;
 	debug_platform_write_entire_file* DEBUGPlatformWriteEntireFile;
 	debug_platform_free_file_memory* DEBUGPlatformFreeFileMemory;
+
 #if ENGINE_DEBUG_MODE
 	debug_cycle_counter Counters[256];
 #endif
@@ -159,32 +146,88 @@ struct game_engine_state{
 	std::vector<voxel_mesh_chunk> MeshThreads;
 	std::vector<Model> Models;
 
-	game_shader MainShader;
-	game_shader TextShader;
-	game_shader CubeShader;
-	game_shader ScreenShader;
-	game_shader DepthShader;
-	game_shader CubemapShader;
+	loaded_shader MainShader;
+	loaded_shader TextShader;
+	loaded_shader CubeShader;
+	loaded_shader ScreenShader;
+	loaded_shader DepthShader;
+	loaded_shader CubemapShader;
 
 	character_info* Characters;
 	character_atlas Atlas;
 
-	u32 textVAO;
-	u32 textVBO;
+	u32 TextVAO;
+	u32 TextVBO;
 
-	u32 cubemapVAO;
-	u32 cubemapTexture;
+	//soil_loaded_texture CubemapTexture;
+	u32 CubemapVAO;
 
-	game_framebuffer mainFramebuffer;
+	game_framebuffer MainFramebuffer;
 };
 
-#define GAME_UPDATE_AND_RENDER(name) void name(game_memory* Memory, game_input* Input, game_screen_buffer* ScreenBuffer, game_engine_state* State)
+struct platform_dependent_context{
+	game_time* Time;
+	game_camera* Camera;
+	character_info* Characters;
+	character_atlas Atlas;
+};
+
+struct game_button_state{
+	bool IsDown;
+	bool WasDown;
+};
+
+struct game_input_controller{
+
+	bool CapturingMouse;
+
+	union{
+		struct{
+			float MouseX;
+			float MouseY;
+		};
+		float MouseP[2];
+	};
+
+	float DeltaMouseX;
+	float DeltaMouseY;
+
+	game_button_state LeftKey;
+	game_button_state RightKey;
+	game_button_state UpKey;
+	game_button_state DownKey;
+
+	game_button_state SpaceKey;
+	game_button_state ShiftKey;
+};
+
+struct game_input{
+
+	game_camera Camera;
+	game_time Time;
+
+	union{
+		struct{
+			game_input_controller controller0;
+			game_input_controller controller1;
+			game_input_controller controller2;
+			game_input_controller controller3;
+		};
+		game_input_controller controllers[4];
+	};
+	game_input(){
+
+	}
+};
+
+
+#define GAME_UPDATE_AND_RENDER(name) void name(game_memory* Memory, game_input* Input, game_screen_buffer* ScreenBuffer, platform_dependent_context* DepContext)
 typedef GAME_UPDATE_AND_RENDER(game_update_and_render);
 GAME_UPDATE_AND_RENDER(GameUpdateAndRender);
 
-void UniformMaterial(game_shader shader, phong_material pmat, std::string unVarName);
-void UniformPointLight(game_shader shader, point_light lit, std::string unVarName);
-void UniformDirectionalLight(game_shader shader, directional_light lit, std::string unVarName);
+void UniformMaterial(loaded_shader shader, phong_material pmat, std::string unVarName);
+void UniformPointLight(loaded_shader shader, point_light lit, std::string unVarName);
+void UniformDirectionalLight(loaded_shader shader, directional_light lit, std::string unVarName);
 
 
 extern game_memory* DebugGlobalMemory;

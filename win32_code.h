@@ -34,8 +34,6 @@ struct sound_buffer{
 	DWORD AvgBytesPerSec;
 	WORD BlockAlign;
 	WORD BitsPerSample;
-
-
 	DWORD RunningSample;
 };
 
@@ -50,6 +48,7 @@ struct capture_buffer{
 	WORD BitsPerSample;
 	DWORD RunningSample;
 };
+
 
 #define WIN32_CODE_H
 #endif

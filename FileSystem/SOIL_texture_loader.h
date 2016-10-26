@@ -4,13 +4,13 @@
 #include <SOIL.h>
 #include <GL/glew.h>
 
-enum loaded_texture_type{
+enum soil_loaded_texture_type{
 	LOADED_SIMPLE_TEXTURE,
 	LOADED_CUBEMAP_TEXTURE,
 };
 
-struct loaded_texture{
-	loaded_texture_type type;
+struct soil_loaded_texture{
+	soil_loaded_texture_type type;
 	
 	int width;
 	int height;
@@ -18,7 +18,7 @@ struct loaded_texture{
 	GLuint texture;
 };
 
-inline loaded_texture LoadTexture(const char* filePath){
+inline soil_loaded_texture LoadTexture(const char* filePath){
 	
 	/*
 	glGenTextures(1, &this->texture);
@@ -48,13 +48,13 @@ inline loaded_texture LoadTexture(const char* filePath){
 	*/
 
 
-	loaded_texture result;
+	soil_loaded_texture result;
 	result.type = LOADED_SIMPLE_TEXTURE;
 	
 	result.texture = SOIL_load_OGL_texture
 		(
 		filePath,
-		SOIL_LOAD_AUTO,
+		SOIL_LOAD_RGBA,
 		SOIL_CREATE_NEW_ID,
 		0
 		);
@@ -71,8 +71,8 @@ inline loaded_texture LoadTexture(const char* filePath){
 }
 
 //Right -> Left -> Top -> Bottom -> Back -> Front
-inline loaded_texture LoadCubemapTexture(std::vector<const char*> paths){
-	loaded_texture result;
+inline soil_loaded_texture LoadCubemapTexture(std::vector<const char*> paths){
+	soil_loaded_texture result;
 	result.type = LOADED_CUBEMAP_TEXTURE;
 
 	GLuint textureID;
